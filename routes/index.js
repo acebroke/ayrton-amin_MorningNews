@@ -6,6 +6,7 @@ var SHA256 = require('crypto-js/sha256')
 var encBase64 = require('crypto-js/enc-base64')
 
 var userModel = require('../models/users')
+// var articlesModel = require('../models/articles')
 
 
 router.post('/sign-up', async function(req,res,next){
@@ -41,7 +42,10 @@ router.post('/sign-up', async function(req,res,next){
       token: uid2(32),
       salt: salt,
     })
-  
+    // newUser.articles.push({
+    //   title: "test",
+    //   content:"test",
+    //   urlToImage: "test"})
     saveUser = await newUser.save()
   
     
@@ -94,6 +98,47 @@ router.post('/sign-in', async function(req,res,next){
   res.json({result, user, error, token})
 
 
+})
+
+router.post('/addArticle', async function(req,res,next){
+
+  console.log("token:",req.body.token);
+
+  var users = await userModel.findOne(
+    { token: req.body.token }
+ )
+console.log("log avant le push",users);
+    users.articles.push({
+      title: req.body.myarticletitles,
+      content:req.body.myarticlecontent,
+      urlToImage: req.body.myarticleimg})
+
+      saveUser = await users.save()
+      console.log("log apres le push", users);
+ res.json({users})
+ 
+})
+
+router.post('/deleteArticle', async function(req,res,next){
+
+  console.log("token:",req.body.token);
+
+  var users = await userModel.findOne(
+    { token: req.body.token }
+ )
+  if (users.articles.length > 0){
+    for (var i = 0; i < users.articles.length; i++){
+      users.articles.splice(i,1);
+      saveUser = await users.save()
+    }
+    res.json({articles :users.articles})
+  }else{
+    res.json()
+  }  
+    
+
+ 
+ 
 })
 
 module.exports = router;

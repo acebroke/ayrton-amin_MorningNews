@@ -13,6 +13,7 @@ function ScreenArticlesBySource(props) {
   const [visible, setVisible] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
+  const [token, setToken] = useState(props.mytoken)
 
   useEffect(() => {
     const findArticles = async() => {
@@ -20,6 +21,7 @@ function ScreenArticlesBySource(props) {
       const body = await data.json()
       console.log(body)
       setArticleList(body.articles) 
+     
     }
 
     findArticles()    
@@ -41,6 +43,20 @@ function ScreenArticlesBySource(props) {
     console.log(e)
     setVisible(false)
   }
+
+
+  var addToWishList = async (article) => {
+
+    props.addToWishListRedux(article)
+  const data = await fetch('/addArticle', {
+    method: 'POST',
+    headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+    body: `myarticletitles=${article.title}&myarticlecontent=${article.content}&myarticleimg=${article.urlToImage}&token=${token}`,
+  })
+
+  
+  }
+
 
   return (
     <div>
@@ -69,7 +85,7 @@ function ScreenArticlesBySource(props) {
                   }
                   actions={[
                       <Icon type="read" key="ellipsis2" onClick={() => showModal(article.title,article.content)} />,
-                      <Icon type="like" key="ellipsis" onClick={()=> {props.addToWishList(article)}} />
+                      <Icon type="like" key="ellipsis" onClick={()=> {addToWishList(article)}} />
                   ]}
                   >
 
@@ -103,10 +119,13 @@ function ScreenArticlesBySource(props) {
       </div>
   );
 }
+function mapStateToProps(state){
+  return {mytoken: state.token}
+}
 
 function mapDispatchToProps(dispatch){
   return {
-    addToWishList: function(article){
+    addToWishListRedux: function(article){
       dispatch({type: 'addArticle',
         articleLiked: article
       })
@@ -115,6 +134,6 @@ function mapDispatchToProps(dispatch){
 }
 
 export default connect(
-  null,
+  mapStateToProps,
   mapDispatchToProps
 )(ScreenArticlesBySource)

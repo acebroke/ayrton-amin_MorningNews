@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useState, useEffect} from 'react';
 import './App.css';
 import { Card, Icon, Modal} from 'antd';
 import Nav from './Nav'
@@ -7,12 +7,11 @@ import {connect} from 'react-redux'
 
 const { Meta } = Card;
 
-function ScreenMyArticles(props) {
+ function ScreenMyArticles(props)  {
   const [visible, setVisible] = useState(false)
   const [title, setTitle] = useState('')
   const [content, setContent] = useState('')
-
-
+  const [token, settoken] = useState(props.mytoken)
 
   var showModal = (title, content) => {
     setVisible(true)
@@ -30,7 +29,19 @@ function ScreenMyArticles(props) {
     console.log(e)
     setVisible(false)
   }
-
+  var deleteToWishList = async (article) => {
+    console.log("mon article",article);
+    props.deleteToWishListRedux(article)
+   
+    const data = await fetch('/deleteArticle', {
+      method: 'DELETE',
+      headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+      body: `myarticletitles=${article}&&token=${token}`,
+    })
+  
+    
+    }
+console.log("mes articles",props.myArticles);
   var noArticles
   if(props.myArticles == 0){
     noArticles = <div style={{marginTop:"30px"}}>No Articles</div>
@@ -67,7 +78,7 @@ function ScreenMyArticles(props) {
                     }
                     actions={[
                         <Icon type="read" key="ellipsis2" onClick={() => showModal(article.title,article.content)} />,
-                        <Icon type="delete" key="ellipsis" onClick={() => props.deleteToWishList(article.title)} />
+                        <Icon type="delete" key="ellipsis" onClick={() => deleteToWishList(article.title)} />
                     ]}
                     >
 
@@ -105,12 +116,12 @@ function ScreenMyArticles(props) {
 }
 
 function mapStateToProps(state){
-  return {myArticles: state.wishList}
+  return {myArticles: state.wishList, mytoken: state.token}
 }
 
 function mapDispatchToProps(dispatch){
   return {
-    deleteToWishList: function(articleTitle){
+    deleteToWishListRedux: function(articleTitle){
       dispatch({type: 'deleteArticle',
         title: articleTitle
       })
